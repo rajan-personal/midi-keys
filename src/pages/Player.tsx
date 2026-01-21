@@ -594,6 +594,51 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
     };
   }, [isReady, duration, keyConfigMap, totalTicks]);  
 
+  // --- Keyboard Controls ---
+  useEffect(() => {
+    if (!isReady) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent default behavior for arrow keys to avoid page scrolling
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      switch (e.key) {
+        case ' ': // Space bar - play/pause
+          togglePlay();
+          break;
+        case 'ArrowLeft': // Left arrow - 5 seconds backward
+          skipBackward();
+          break;
+        case 'ArrowRight': // Right arrow - 5 seconds forward
+          skipForward();
+          break;
+        case 'ArrowUp': // Up arrow - increase speed
+          setPlaybackSpeed(prev => {
+            const newSpeed = Math.min(2.0, prev + 0.1);
+            if (baseBpm) {
+              Tone.Transport.bpm.value = baseBpm * newSpeed;
+            }
+            return newSpeed;
+          });
+          break;
+        case 'ArrowDown': // Down arrow - decrease speed
+          setPlaybackSpeed(prev => {
+            const newSpeed = Math.max(0.5, prev - 0.1);
+            if (baseBpm) {
+              Tone.Transport.bpm.value = baseBpm * newSpeed;
+            }
+            return newSpeed;
+          });
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isReady, baseBpm]);
+
   // --- Handlers ---
   const togglePlay = () => {
     if (Tone.Transport.state === 'started') {
