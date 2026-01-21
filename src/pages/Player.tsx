@@ -695,52 +695,30 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleUploadNew = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="player-container">
-      <div className="hud-header">
-        <div className="hud-group controls-group" style={{ opacity: !isReady ? 0.3 : 1, pointerEvents: !isReady ? 'none' : 'auto' }}>
-            <button className="control-btn mini" onClick={skipBackward}>↺</button>
-            <button className="control-btn primary mini" onClick={togglePlay}>
-              {isPlaying ? '⏸' : '▶'}
-            </button>
-            <button className="control-btn mini" onClick={skipForward}>↻</button>
-            
-            <div className="speed-control" style={{ marginLeft: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '10px', color: '#64748b' }}>{playbackSpeed.toFixed(1)}x</span>
-                <input 
-                    type="range" 
-                    min="0.5" 
-                    max="2.0" 
-                    step="0.1" 
-                    value={playbackSpeed}
-                    onChange={handleSpeedChange}
-                    style={{ width: '50px', height: '4px' }}
-                />
-            </div>
-
-            <div className="scrubber-compact">
-              <span className="time-current" ref={timeDisplayRef}>{formatTime(currentTime)}</span>
-              <input 
-                type="range" 
-                min={0} 
-                max={duration || 1} 
-                step={0.1}
-                defaultValue={0}
-                ref={scrubberRef}
-                onChange={handleSeek}
-                className="progress-track"
-                style={{ width: '120px' }}
-              />
-              <span className="time-total">{formatTime(duration)}</span>
-            </div>
-        </div>
-        <div className="song-title">
-          <h1>{songTitle}</h1>
-        </div>
-        <div className="hud-group">
-           {/* Settings Button Removed */}
-        </div>
-      </div>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        accept=".mid,.midi" 
+        style={{ display: 'none' }} 
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) {
+            Tone.Transport.stop();
+            setIsPlaying(false);
+            setIsReady(false);
+            setLoadingError(null);
+            setCurrentTime(0);
+            searchIndexRef.current = 0;
+            onSelectFile(f);
+          }
+        }}
+      />
 
       <div className="stage">
         <div className="waterfall-area">
@@ -772,6 +750,60 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
               // We might need to override CSS for dark mode look.
             />
         </div>
+      </div>
+
+      <div className="hud-trigger-area" />
+
+      <div className="hud-header">
+        <div className="song-title">
+          <h1>{songTitle}</h1>
+        </div>
+        <div className="hud-group controls-wrapper" style={{ opacity: !isReady ? 0.3 : 1, pointerEvents: !isReady ? 'none' : 'auto' }}>
+            <div className="controls-group">
+              <button className="control-btn mini" onClick={skipBackward}>↺</button>
+              <button className="control-btn primary mini" onClick={togglePlay}>
+                {isPlaying ? '⏸' : '▶'}
+              </button>
+              <button className="control-btn mini" onClick={skipForward}>↻</button>
+              
+              <div className="speed-control" style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500', width: '28px' }}>{playbackSpeed.toFixed(1)}x</span>
+                  <input 
+                      type="range" 
+                      min="0.5" 
+                      max="2.0" 
+                      step="0.1" 
+                      value={playbackSpeed}
+                      onChange={handleSpeedChange}
+                      style={{ width: '60px', height: '3px' }}
+                  />
+              </div>
+
+              <div className="scrubber-compact">
+                <span className="time-current" ref={timeDisplayRef}>{formatTime(currentTime)}</span>
+                <input 
+                  type="range" 
+                  min={0} 
+                  max={duration || 1} 
+                  step={0.1}
+                  defaultValue={0}
+                  ref={scrubberRef}
+                  onChange={handleSeek}
+                  className="progress-track"
+                  style={{ width: '200px' }}
+                />
+                <span className="time-total">{formatTime(duration)}</span>
+              </div>
+            </div>
+        </div>
+            
+        <button 
+          className="btn-icon" 
+          onClick={handleUploadNew}
+          title="Upload new MIDI file"
+        >
+          📁
+        </button>
       </div>
 
       {!isReady && (
@@ -813,26 +845,12 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
                 </button>
                 
                 <button 
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleUploadNew}
                   className="btn-icon"
                   style={{ background: 'var(--accent-primary)', color: 'white' }}
                 >
                   Upload MIDI File
                 </button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  accept=".mid,.midi" 
-                  style={{ display: 'none' }} 
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      setLoadingError(null);
-                      onSelectFile(f);
-                      // Force re-init if needed, but the useEffect dependency on 'file' should handle it
-                    }
-                  }}
-                />
               </div>
             </div>
           ) : (
