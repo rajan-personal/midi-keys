@@ -29,69 +29,52 @@
 
 /* --- HUD Header --- */
 .hud-header {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  max-width: 90%;
-  height: auto;
-  z-index: 100;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 24px;
-  background: rgba(15, 16, 20, 0.85);
-  backdrop-filter: blur(12px);
-  border-radius: 99px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  pointer-events: auto;
-  gap: 20px;
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-.hud-header:hover {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-5px);
-}
-
-/* Also show when hovering the bottom trigger area */
-.player-container::after {
-  content: '';
-  position: absolute;
+  position: absolute; /* Overlay mode */
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
-  z-index: 90;
+  height: 72px; /* Slightly taller for better touch target */
+  z-index: 50;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(5, 5, 5, 0.9); /* slight transparency */
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08); 
+  
+  /* Hidden by default */
+  opacity: 0;
+  pointer-events: none; /* Let clicks pass through to keys when hidden */
+  transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.player-container:hover .hud-header {
-  /* Option: Only show when hovering the bar itself or use JS for interaction timeout */
-  /* For now, sticking to 'hover on it' as requested, but giving it a pill shape makes it clear it's floating */
+.hud-header.visible, /* Class toggle if needed */
+.hud-trigger-area:hover ~ .hud-header,
+.hud-header:hover {
+  opacity: 1;
+  pointer-events: auto; /* Enable clicks when visible */
+  transform: translateY(0);
 }
 
-/* Keep the previous hover behavior simpler: hover on the pill to see it? 
-   No, it's invisible. We need a trigger.
-   Let's make the bottom area trigger the appearance.
-*/
+/* Trigger area at the bottom */
 .hud-trigger-area {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 120px;
-  z-index: 99;
+  height: 80px; /* Trigger height */
+  z-index: 51; /* Above keys, below header (conceptually, though header z is 50, trigger needs to catch mouse) */
+  /* Actually trigger needs to be z-index 49 to allow header interaction? 
+     No, trigger and header interact via sibling selector. 
+     If header is visible (z-50) it sits on top. 
+     If header is hidden (pointer-events: none), clicks go through.
+     We need trigger to capture hover.
+  */
 }
 
-.hud-trigger-area:hover ~ .hud-header,
-.hud-header:hover {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
 
 .hud-group {
   display: flex;
@@ -165,7 +148,7 @@
   display: flex;
   flex-direction: column;
   perspective: 1000px;
-  order: 1;
+  height: 100vh;
 }
 
 /* Waterfall Canvas */
