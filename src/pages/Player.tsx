@@ -730,18 +730,22 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
               noteRange={{ first: activeRange.min, last: activeRange.max }}
               playNote={(midiNumber: number) => {
                 // Play sound if clicked manually
-                const noteName = Tone.Frequency(midiNumber, "midi").toNote();
-                samplerRef.current?.triggerAttack(noteName);
-                setActiveKeys(prev => new Set(prev).add(midiNumber));
+                if (samplerRef.current) {
+                  const noteName = Tone.Frequency(midiNumber, "midi").toNote();
+                  samplerRef.current.triggerAttack(noteName, Tone.now());
+                  setActiveKeys(prev => new Set(prev).add(midiNumber));
+                }
               }}
               stopNote={(midiNumber: number) => {
-                const noteName = Tone.Frequency(midiNumber, "midi").toNote();
-                samplerRef.current?.triggerRelease(noteName);
-                 setActiveKeys(prev => {
-                   const s = new Set(prev);
-                   s.delete(midiNumber);
-                   return s;
-                 });
+                if (samplerRef.current) {
+                  const noteName = Tone.Frequency(midiNumber, "midi").toNote();
+                  samplerRef.current.triggerRelease(noteName, Tone.now());
+                  setActiveKeys(prev => {
+                    const s = new Set(prev);
+                    s.delete(midiNumber);
+                    return s;
+                  });
+                }
               }}
               width={containerWidth}
               activeNotes={Array.from(activeKeys)}
