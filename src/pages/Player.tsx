@@ -627,7 +627,7 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
           break;
         case 'ArrowDown': // Down arrow - decrease speed
           setPlaybackSpeed(prev => {
-            const newSpeed = Math.max(0.5, prev - 0.1);
+            const newSpeed = Math.max(0.2, prev - 0.1);
             if (baseBpm) {
               Tone.Transport.bpm.value = baseBpm * newSpeed;
             }
@@ -812,7 +812,7 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500', width: '28px' }}>{playbackSpeed.toFixed(1)}x</span>
                   <input 
                       type="range" 
-                      min="0.5" 
+                      min="0.2" 
                       max="2.0" 
                       step="0.1" 
                       value={playbackSpeed}
