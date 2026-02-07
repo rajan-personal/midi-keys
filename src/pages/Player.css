@@ -67,6 +67,7 @@
   right: 0;
   height: 80px; /* Trigger height */
   z-index: 51; /* Above keys, below header (conceptually, though header z is 50, trigger needs to catch mouse) */
+  pointer-events: none; /* Don't block clicks to piano keys */
   /* Actually trigger needs to be z-index 49 to allow header interaction? 
      No, trigger and header interact via sibling selector. 
      If header is visible (z-50) it sits on top. 
