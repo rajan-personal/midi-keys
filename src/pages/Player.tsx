@@ -197,6 +197,7 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const waterfallRef = useRef<HTMLDivElement>(null);
   
   const notesRef = useRef<NoteData[]>([]);
   const activeKeysRef = useRef<Set<number>>(new Set());
@@ -206,6 +207,7 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
   const lastTimeRef = useRef<number>(0); // Track time to detect seeks
   const scrubberRef = useRef<HTMLInputElement>(null);
   const timeDisplayRef = useRef<HTMLSpanElement>(null);
+  const lastClickTimeRef = useRef<number>(0);
 
   const handleStart = async () => {
     try {
@@ -684,6 +686,42 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
       }
   };
 
+  const handleWaterfallClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isReady || !waterfallRef.current) return;
+    
+    const rect = waterfallRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const clickRatio = clickX / width;
+    
+    const now = Date.now();
+    const timeSinceLastClick = now - lastClickTimeRef.current;
+    const isDoubleClick = timeSinceLastClick < 300;
+    
+    lastClickTimeRef.current = now;
+    
+    if (isDoubleClick) {
+      // Double click - seek based on position
+      if (clickRatio < 0.33) {
+        // Left third - rewind
+        skipBackward();
+      } else if (clickRatio > 0.67) {
+        // Right third - fast forward
+        skipForward();
+      }
+    } else {
+      // Single click in center - toggle play/pause
+      if (clickRatio >= 0.33 && clickRatio <= 0.67) {
+        setTimeout(() => {
+          // Delay to check if it becomes a double click
+          if (Date.now() - lastClickTimeRef.current >= 300) {
+            togglePlay();
+          }
+        }, 300);
+      }
+    }
+  };
+
   /* const handleBack = () => {
     Tone.Transport.stop();
     navigate('/');
@@ -721,7 +759,7 @@ const Player: React.FC<PlayerProps> = ({ file, onSelectFile }) => {
       />
 
       <div className="stage">
-        <div className="waterfall-area">
+        <div className="waterfall-area" ref={waterfallRef} onClick={handleWaterfallClick}>
           <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
         </div>
 
